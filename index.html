@@ -92,22 +92,23 @@
   .p-real .val{font-size:17px;font-weight:700;color:var(--amber)}
   .p-real .val.pos{color:var(--green)}
   .p-real .val.neg{color:var(--red)}
-  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-left:6px}
-  .field label{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--txt);font-weight:700;margin-bottom:8px;letter-spacing:.5px}
-  .field label .ico{font-size:15px;line-height:1}
+  .inputs{display:grid;grid-template-columns:1fr;gap:14px;padding-left:6px}
+  .field label{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--txt);font-weight:700;margin-bottom:10px;letter-spacing:.5px}
+  .field label .ico{font-size:16px;line-height:1}
   .field label.loot .ico{color:var(--amber)}
   .field label.loss .ico{color:var(--red)}
   .field label .unit{color:var(--txt3);font-size:11px;margin-left:auto;font-weight:400;letter-spacing:0}
   .inp{
     display:flex;align-items:center;background:#0d1310;
     border:2px solid var(--line);border-radius:8px;
-    min-height:52px;padding:2px 0;transition:border-color .15s;
+    min-height:56px;padding:2px 0;transition:border-color .15s;
   }
   .inp:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.18)}
   .inp input{
     flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--txt);
-    font-family:var(--mono);font-size:18px;font-weight:700;
-    padding:14px 4px 14px 14px;height:48px;line-height:20px;
+    font-family:var(--mono);font-size:16px;font-weight:700;
+    padding:16px 4px 16px 14px;height:52px;line-height:20px;
+    -webkit-appearance:none;appearance:none;
   }
   .inp input::placeholder{color:#46524b;font-weight:400}
   .inp .u{font-size:14px;color:var(--txt2);padding-right:14px;font-family:var(--mono);font-weight:600}
@@ -182,14 +183,21 @@
   }
   footer{text-align:center;margin-top:26px;color:#3e4a43;font-size:11px;font-family:var(--mono);letter-spacing:1px}
 
-  @media (min-width:720px){
+  @media (min-width:560px){
     .players{grid-template-columns:1fr 1fr 1fr}
     .card::before{top:0;left:0;right:0;bottom:auto;width:auto;height:3px}
     .card-head{flex-direction:column;align-items:flex-start;gap:8px}
     .p-real{text-align:left}
-    /* 卡片窄于手机端时再竖排，避免战损被忽略 */
-    .inputs{grid-template-columns:1fr}
-    .field label{font-size:14px;font-weight:700;letter-spacing:.5px}
+    /* 卡片宽度适中时两列并排 */
+    .inputs{grid-template-columns:1fr 1fr;gap:10px}
+    .field label{font-size:13px;margin-bottom:6px}
+    .inp{min-height:48px}
+    .inp input{font-size:15px;height:44px;padding:12px 4px 12px 12px}
+  }
+  @media (min-width:900px){
+    /* 桌面宽屏，输入框再宽松一点 */
+    .field label{font-size:14px}
+    .inp input{font-size:16px}
   }
 </style>
 </head>
