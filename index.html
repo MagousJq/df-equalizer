@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>三角洲行动 · 三人撤离收益均衡器</title>
+<style>
+  :root{
+    --bg:#0b0f0d;
+    --bg2:#101613;
+    --card:#151d19;
+    --card2:#1a2420;
+    --line:#26322c;
+    --amber:#f5a623;
+    --amber-dim:#b97c17;
+    --green:#3ddc84;
+    --red:#ff5c5c;
+    --txt:#e8efe9;
+    --txt2:#93a299;
+    --txt3:#5f6f66;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 420px at 50% -120px,rgba(245,166,35,.10),transparent 60%),
+      linear-gradient(180deg,#0c110e 0%,#0b0f0d 100%);
+    background-attachment:fixed;
+    padding-bottom:48px;
+  }
+  .grid-bg{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(rgba(245,166,35,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(245,166,35,.035) 1px,transparent 1px);
+    background-size:36px 36px;
+    mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 70%);
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 70%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:20px 16px 0;}
+
+  /* header */
+  header{text-align:center;padding:18px 0 22px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:11px;letter-spacing:2px;
+    color:var(--amber);border:1px solid rgba(245,166,35,.35);
+    border-radius:3px;padding:4px 12px;background:rgba(245,166,35,.06);
+    margin-bottom:14px;
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.35}}
+  h1{font-size:24px;font-weight:800;letter-spacing:1px;line-height:1.35;}
+  h1 .hl{color:var(--amber)}
+  .sub{margin-top:8px;color:var(--txt2);font-size:13px;line-height:1.7}
+  .formula{
+    display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;
+    color:var(--txt2);background:var(--card);border:1px solid var(--line);
+    padding:5px 12px;border-radius:4px;
+  }
+  .formula b{color:var(--amber);font-weight:600}
+  .rule{
+    display:block;margin:10px auto 0;font-size:12px;line-height:1.7;
+    color:var(--txt2);background:rgba(245,166,35,.07);
+    border:1px solid rgba(245,166,35,.25);border-radius:6px;
+    padding:6px 12px;max-width:560px;
+  }
+
+  /* cards */
+  .players{display:grid;grid-template-columns:1fr;gap:12px;margin-top:20px}
+  .card{
+    background:linear-gradient(180deg,var(--card2),var(--card));
+    border:1px solid var(--line);border-radius:10px;padding:14px 14px 12px;
+    position:relative;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);opacity:.85}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-left:6px}
+  .p-tag{display:flex;align-items:center;gap:10px}
+  .p-num{
+    font-family:var(--mono);font-size:11px;color:#0b0f0d;background:var(--amber);
+    font-weight:700;border-radius:3px;padding:2px 7px;letter-spacing:1px;
+  }
+  .p-name{
+    background:transparent;border:none;color:var(--txt);font-size:16px;font-weight:700;
+    width:130px;outline:none;border-bottom:1px dashed transparent;padding:1px 2px;
+  }
+  .p-name:focus{border-bottom-color:var(--amber-dim)}
+  .p-real{font-family:var(--mono);text-align:right}
+  .p-real .lab{font-size:10px;color:var(--txt3);letter-spacing:1px;display:block}
+  .p-real .val{font-size:17px;font-weight:700;color:var(--amber)}
+  .p-real .val.pos{color:var(--green)}
+  .p-real .val.neg{color:var(--red)}
+  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-left:6px}
+  .field label{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--txt);font-weight:700;margin-bottom:8px;letter-spacing:.5px}
+  .field label .ico{font-size:15px;line-height:1}
+  .field label.loot .ico{color:var(--amber)}
+  .field label.loss .ico{color:var(--red)}
+  .field label .unit{color:var(--txt3);font-size:11px;margin-left:auto;font-weight:400;letter-spacing:0}
+  .inp{
+    display:flex;align-items:center;background:#0d1310;
+    border:2px solid var(--line);border-radius:8px;
+    min-height:52px;padding:2px 0;transition:border-color .15s;
+  }
+  .inp:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.18)}
+  .inp input{
+    flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--txt);
+    font-family:var(--mono);font-size:18px;font-weight:700;
+    padding:14px 4px 14px 14px;height:48px;line-height:20px;
+  }
+  .inp input::placeholder{color:#46524b;font-weight:400}
+  .inp .u{font-size:14px;color:var(--txt2);padding-right:14px;font-family:var(--mono);font-weight:600}
+
+  /* actions */
+  .actions{display:flex;gap:10px;margin-top:16px}
+  .btn{
+    flex:1;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;
+    border:1px solid var(--line);background:var(--card);color:var(--txt2);
+    transition:all .15s;letter-spacing:1px;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(180deg,#f7b23a,#e8961a);color:#1a1206;border-color:#f7b23a;box-shadow:0 4px 16px rgba(245,166,35,.25)}
+  .btn.ghost:active{background:var(--card2)}
+
+  /* result */
+  .result{margin-top:22px;display:none}
+  .result.show{display:block;animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .panel{
+    background:linear-gradient(180deg,var(--card2),var(--card));
+    border:1px solid var(--line);border-radius:10px;padding:16px 14px;margin-bottom:12px;
+  }
+  .panel-title{
+    font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--txt3);
+    margin-bottom:14px;display:flex;align-items:center;gap:8px;
+  }
+  .panel-title::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .stat{background:#0d1310;border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+  .stat .k{font-size:11px;color:var(--txt3);letter-spacing:1px}
+  .stat .v{font-family:var(--mono);font-size:21px;font-weight:700;margin-top:5px}
+  .stat .v.amber{color:var(--amber)}
+  .stat .v.green{color:var(--green)}
+  .stat .v .u{font-size:12px;color:var(--txt3);font-weight:400;margin-left:2px}
+
+  .transfers{display:flex;flex-direction:column;gap:10px}
+  .transfer{
+    display:flex;align-items:center;gap:10px;
+    background:#0d1310;border:1px solid var(--line);border-radius:8px;padding:13px 12px;
+  }
+  .t-person{flex:1;min-width:0;text-align:center}
+  .t-person .role{font-size:10px;font-family:var(--mono);letter-spacing:1px;margin-bottom:4px}
+  .t-person.payer .role{color:var(--red)}
+  .t-person.receiver .role{color:var(--green)}
+  .t-person .nm{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-arrow{flex:0 0 92px;text-align:center}
+  .t-arrow .amt{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber);white-space:nowrap}
+  .t-arrow .amt .u{font-size:11px;color:var(--txt3);font-weight:400}
+  .t-arrow .line{color:var(--amber-dim);font-size:15px;margin-top:2px;letter-spacing:-1px}
+
+  .allgood{text-align:center;padding:18px 8px}
+  .allgood .big{font-size:17px;font-weight:800;color:var(--green);margin-bottom:6px}
+  .allgood .sm{font-size:13px;color:var(--txt2)}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 6px;text-align:right;font-family:var(--mono)}
+  th:first-child,td:first-child{text-align:left}
+  th{font-size:10px;color:var(--txt3);font-weight:400;letter-spacing:1px;border-bottom:1px solid var(--line)}
+  td{border-bottom:1px solid rgba(38,50,44,.5)}
+  tr:last-child td{border-bottom:none}
+  td .pill{font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:var(--mono)}
+  .pill.out{color:var(--red);background:rgba(255,92,92,.1)}
+  .pill.in{color:var(--green);background:rgba(61,220,132,.1)}
+  .eq{color:var(--amber);font-weight:700}
+
+  .tip{
+    margin-top:14px;font-size:11px;color:var(--txt3);line-height:1.8;text-align:center;
+    padding:0 8px;
+  }
+  footer{text-align:center;margin-top:26px;color:#3e4a43;font-size:11px;font-family:var(--mono);letter-spacing:1px}
+
+  @media (min-width:720px){
+    .players{grid-template-columns:1fr 1fr 1fr}
+    .card::before{top:0;left:0;right:0;bottom:auto;width:auto;height:3px}
+    .card-head{flex-direction:column;align-items:flex-start;gap:8px}
+    .p-real{text-align:left}
+    /* 卡片窄于手机端时再竖排，避免战损被忽略 */
+    .inputs{grid-template-columns:1fr}
+    .field label{font-size:14px;font-weight:700;letter-spacing:.5px}
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+  <header>
+    <div class="badge"><span class="dot"></span>EXTRACTION PROFIT EQUALIZER</div>
+    <h1>三角洲行动 · <span class="hl">三人撤离收益均衡器</span></h1>
+    <div class="sub">撤离成功后，输入每人的显示收益与战损，自动计算转账方案<br>让三名队员的真实收益完全一致</div>
+    <div class="formula">真实收益 = <b>显示收益</b> − <b>战损</b></div>
+    <div class="rule">📌 仅输入 1 或 2 名队员的数据时，按实际人数均分；空着的队员不参与结算</div>
+  </header>
+
+  <section class="players" id="players">
+    <div class="card">
+      <div class="card-head">
+        <div class="p-tag">
+          <span class="p-num">P1</span>
+          <input class="p-name" data-k="name" data-i="0" value="队员一" maxlength="8" placeholder="队员名字">
+        </div>
+        <div class="p-real">
+          <span class="lab">真实收益</span>
+          <span class="val" id="real0">- 万</span>
+        </div>
+      </div>
+      <div class="inputs">
+        <div class="field">
+          <label class="loot"><span class="ico">💰</span>显示收益<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loot" data-i="0" placeholder="如 520"><span class="u">万</span></div>
+        </div>
+        <div class="field">
+          <label class="loss"><span class="ico">🩸</span>战损<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loss" data-i="0" placeholder="如 18"><span class="u">万</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="p-tag">
+          <span class="p-num">P2</span>
+          <input class="p-name" data-k="name" data-i="1" value="队员二" maxlength="8" placeholder="队员名字">
+        </div>
+        <div class="p-real">
+          <span class="lab">真实收益</span>
+          <span class="val" id="real1">- 万</span>
+        </div>
+      </div>
+      <div class="inputs">
+        <div class="field">
+          <label class="loot"><span class="ico">💰</span>显示收益<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loot" data-i="1" placeholder="如 320"><span class="u">万</span></div>
+        </div>
+        <div class="field">
+          <label class="loss"><span class="ico">🩸</span>战损<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loss" data-i="1" placeholder="如 120"><span class="u">万</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="p-tag">
+          <span class="p-num">P3</span>
+          <input class="p-name" data-k="name" data-i="2" value="队员三" maxlength="8" placeholder="队员名字">
+        </div>
+        <div class="p-real">
+          <span class="lab">真实收益</span>
+          <span class="val" id="real2">- 万</span>
+        </div>
+      </div>
+      <div class="inputs">
+        <div class="field">
+          <label class="loot"><span class="ico">💰</span>显示收益<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loot" data-i="2" placeholder="如 210"><span class="u">万</span></div>
+        </div>
+        <div class="field">
+          <label class="loss"><span class="ico">🩸</span>战损<span class="unit">单位：万</span></label>
+          <div class="inp"><input type="number" inputmode="decimal" data-k="loss" data-i="2" placeholder="如 8"><span class="u">万</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="btn ghost" id="btnDemo">填入示例</button>
+    <button class="btn primary" id="btnCalc">计算均衡方案</button>
+    <button class="btn ghost" id="btnReset">清空</button>
+  </div>
+
+  <section class="result" id="result">
+    <div class="panel">
+      <div class="panel-title">SETTLEMENT // 结算方案</div>
+      <div class="stats">
+        <div class="stat"><div class="k">真实总收益</div><div class="v amber" id="stTotal">-<span class="u">万</span></div></div>
+        <div class="stat"><div class="k">人均目标收益</div><div class="v green" id="stAvg">-<span class="u">万</span></div></div>
+      </div>
+      <div class="transfers" id="transfers"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">BREAKDOWN // 明细</div>
+      <table>
+        <thead><tr><th>队员</th><th>显示收益</th><th>战损</th><th>真实收益</th><th>均衡后</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="tip">金额单位均为「万」。转账金额保留两位小数，均衡后收益误差不超过 0.01 万。</div>
+  </section>
+
+  <footer>DELTA FORCE · 3-MAN SQUAD · FAIR SPLIT</footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const STORAGE_KEY = 'df_equalizer_v1';
+
+  function fmt(n){
+    if(!isFinite(n)) return '-';
+    let s = (Math.round(n*100)/100).toFixed(2);
+    if(s.indexOf('.')>-1) s = s.replace(/\.?0+$/,'');
+    return s === '-0' ? '0' : s;
+  }
+
+  function $(sel,root){ return (root||document).querySelector(sel); }
+  function $$(sel,root){ return Array.from((root||document).querySelectorAll(sel)); }
+
+  // 直接从静态 HTML 读取值（不再动态生成）
+  function readData(){
+    return [0,1,2].map(i => {
+      const nameI = $('.p-name[data-i="'+i+'"]');
+      const lootI = $('.inp input[data-k="loot"][data-i="'+i+'"]');
+      const lossI = $('.inp input[data-k="loss"][data-i="'+i+'"]');
+      const lootVal = lootI?.value || '';
+      const lossVal = lossI?.value || '';
+      const lootNum = parseFloat(lootVal) || 0;
+      const lossNum = parseFloat(lossVal) || 0;
+      const hasData = (lootVal !== '' && !isNaN(parseFloat(lootVal))) ||
+                      (lossVal !== '' && !isNaN(parseFloat(lossVal)));
+      return {
+        index: i,
+        name: (nameI?.value || '').trim() || ('队员'+(i+1)),
+        loot: lootNum,
+        loss: lossNum,
+        real: lootNum - lossNum,
+        hasData
+      };
+    });
+  }
+
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(readData())); }catch(e){}
+  }
+
+  function updateRealPreview(){
+    [0,1,2].forEach(i => {
+      const el = document.getElementById('real'+i);
+      const lootI = $('.inp input[data-k="loot"][data-i="'+i+'"]');
+      const lossI = $('.inp input[data-k="loss"][data-i="'+i+'"]');
+      if(!el || !lootI || !lossI) return;
+      const has = lootI.value!=='' || lossI.value!=='';
+      if(!has){ el.textContent = '- 万'; el.className='val'; return; }
+      const real = (parseFloat(lootI.value)||0) - (parseFloat(lossI.value)||0);
+      el.textContent = fmt(real) + ' 万';
+      el.className = 'val ' + (real>0?'pos':real<0?'neg':'');
+    });
+  }
+
+  // 从 localStorage 恢复输入（如果有）
+  function restoreFromStorage(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if(!Array.isArray(saved) || saved.length!==3) return;
+      [0,1,2].forEach((i)=>{
+        const d = saved[i] || {};
+        const nameI = $('.p-name[data-i="'+i+'"]'); if(nameI && d.name) nameI.value = d.name;
+        const lootI = $('.inp input[data-k="loot"][data-i="'+i+'"]'); if(lootI && d.loot!=='' && d.loot!=null) lootI.value = d.loot;
+        const lossI = $('.inp input[data-k="loss"][data-i="'+i+'"]'); if(lossI && d.loss!=='' && d.loss!=null) lossI.value = d.loss;
+      });
+    }catch(e){}
+  }
+
+  // 绑定所有输入事件
+  document.getElementById('players').addEventListener('input', e=>{
+    updateRealPreview();
+    save();
+  });
+
+  function calc(){
+    const all = readData();
+    const data = all.filter(p=>p.hasData);
+    const n = data.length;
+    if(n===0) return {data:all, total:0, avg:0, transfers:[], count:0};
+    const total = data.reduce((s,p)=>s+p.real,0);
+    const avg = total/n;
+    const EPS = 1e-6;
+    const payers = data.map(p=>({name:p.name, bal:p.real-avg})).filter(p=>p.bal>EPS)
+                       .sort((a,b)=>b.bal-a.bal);
+    const receivers = data.map(p=>({name:p.name, bal:avg-p.real})).filter(p=>p.bal>EPS)
+                          .sort((a,b)=>b.bal-a.bal);
+    const transfers = [];
+    let pi=0, ri=0;
+    const P = payers.map(p=>({...p})), R = receivers.map(r=>({...r}));
+    while(pi<P.length && ri<R.length){
+      const amt = Math.min(P[pi].bal, R[ri].bal);
+      transfers.push({from:P[pi].name, to:R[ri].name, amount: Math.round(amt*100)/100});
+      P[pi].bal -= amt; R[ri].bal -= amt;
+      if(P[pi].bal < 0.005) pi++;
+      if(R[ri].bal < 0.005) ri++;
+    }
+    return {data:all, active:data, total, avg, transfers, count:n};
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function showResult(){
+    try{
+      const {data,active,total,avg,transfers,count} = calc();
+      const result = document.getElementById('result');
+      result.classList.add('show');
+
+      // 0人未输入
+      if(count===0){
+        document.getElementById('stTotal').innerHTML = '-<span class="u">万</span>';
+        document.getElementById('stAvg').innerHTML = '-<span class="u">万</span>';
+        document.getElementById('transfers').innerHTML = '<div class="allgood"><div class="big">⚠ 请至少输入一名队员的数据</div></div>';
+        document.getElementById('tbody').innerHTML = '';
+        return;
+      }
+
+      const avgLabel = count===1 ? '该队员收益' : `人均目标收益（${count}人）`;
+      document.querySelector('.stat:nth-child(1) .k').textContent = `真实总收益（${count}人）`;
+      document.querySelector('.stat:nth-child(2) .k').textContent = avgLabel;
+      document.getElementById('stTotal').innerHTML = fmt(total) + '<span class="u">万</span>';
+      document.getElementById('stAvg').innerHTML = fmt(avg) + '<span class="u">万</span>';
+
+      const tEl = document.getElementById('transfers');
+      tEl.innerHTML = '';
+      if(transfers.length===0){
+        const msg = count===1 ? `${active[0].name} 一人独享 ${fmt(avg)} 万真实收益`
+                              : `${count}人的真实收益一致，每人 ${fmt(avg)} 万`;
+        tEl.innerHTML = `<div class="allgood"><div class="big">✓ 收益已均衡，无需转账</div><div class="sm">${msg}</div></div>`;
+      }else{
+        transfers.forEach(t=>{
+          const d = document.createElement('div');
+          d.className = 'transfer';
+          d.innerHTML = `
+            <div class="t-person payer"><div class="role">PAYER 转出</div><div class="nm">${escapeHtml(t.from)}</div></div>
+            <div class="t-arrow">
+              <div class="amt">${fmt(t.amount)}<span class="u">万</span></div>
+              <div class="line">━━▶</div>
+            </div>
+            <div class="t-person receiver"><div class="role">RECEIVER 转入</div><div class="nm">${escapeHtml(t.to)}</div></div>`;
+          tEl.appendChild(d);
+        });
+      }
+
+      // 明细：只显示有数据的队员
+      const adjByName = {};
+      active.forEach(p=>adjByName[p.name]=0);
+      transfers.forEach(t=>{
+        adjByName[t.from] = (adjByName[t.from]||0) - t.amount;
+        adjByName[t.to]   = (adjByName[t.to]||0)   + t.amount;
+      });
+      const tb = document.getElementById('tbody');
+      tb.innerHTML = '';
+      active.forEach(p=>{
+        const a = adjByName[p.name]||0;
+        const after = p.real + a;
+        const pill = a < -0.005 ? `<span class="pill out">转 ${fmt(-a)}</span>`
+                   : a >  0.005 ? `<span class="pill in">收 ${fmt(a)}</span>` : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(p.name)}</td>
+                        <td>${fmt(p.loot)}</td>
+                        <td>${fmt(p.loss)}</td>
+                        <td>${fmt(p.real)}</td>
+                        <td class="eq">${fmt(after)}${pill}</td>`;
+        tb.appendChild(tr);
+      });
+      result.scrollIntoView({behavior:'smooth', block:'start'});
+    }catch(err){
+      alert('计算出错：'+err.message);
+    }
+  }
+
+  document.getElementById('btnCalc').addEventListener('click', showResult);
+
+  document.getElementById('btnReset').addEventListener('click', ()=>{
+    [0,1,2].forEach(i => {
+      const nameI = $('.p-name[data-i="'+i+'"]'); if(nameI) nameI.value = '队员'+(i+1);
+      const lootI = $('.inp input[data-k="loot"][data-i="'+i+'"]'); if(lootI) lootI.value = '';
+      const lossI = $('.inp input[data-k="loss"][data-i="'+i+'"]'); if(lossI) lossI.value = '';
+    });
+    document.getElementById('result').classList.remove('show');
+    save(); updateRealPreview();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  document.getElementById('btnDemo').addEventListener('click', ()=>{
+    const demo = [{loot:'580',loss:'45'},{loot:'320',loss:'120'},{loot:'210',loss:'8'}];
+    [0,1,2].forEach(i => {
+      const lootI = $('.inp input[data-k="loot"][data-i="'+i+'"]'); if(lootI) lootI.value = demo[i].loot;
+      const lossI = $('.inp input[data-k="loss"][data-i="'+i+'"]'); if(lossI) lossI.value = demo[i].loss;
+    });
+    save(); updateRealPreview(); showResult();
+  });
+
+  // 初始化
+  try{
+    restoreFromStorage();
+    updateRealPreview();
+  }catch(err){
+    console.error('init failed:', err);
+  }
+})();
+</script>
+</body>
+</html>
